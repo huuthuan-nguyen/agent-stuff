@@ -1,9 +1,9 @@
 ---
-  name: ant-ui-layout
+  name: antd-ui-layout
   description: Enforces the use of UI library layout components (Ant Design) over custom CSS for layout, spacing, and alignment. Should using in project has installed Ant Design library.
 ---
 
-  ## Usage
+  ## Ant Design UI layout
   Run this skill when:
   - Writing new components that need layout/spacing
   - Refactoring existing components with custom CSS
@@ -12,12 +12,12 @@
   
   ## Command
   ```
-  /ant-ui-layout [component-path]
+  /antd-ui-layout [component-path]
   ```
   
   ## Examples
   ```
-  /ant-ui-layout 
+  /antd-ui-layout 
   /ant-ui-layout src/components/MyComponent.jsx
   ```
   
