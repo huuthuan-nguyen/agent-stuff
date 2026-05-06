@@ -7,9 +7,11 @@ description: Use when the user asks to summarize pi-agent / pi / qwen / alibaba 
 
 ## Overview
 
-Distills the JSONL conversation logs the **pi-agent** CLI keeps under `~/.pi/agent/sessions/<encoded-cwd>/<TIMESTAMP>_<uuid>.jsonl` into one concise markdown file per day, named `YYYYMMDD_<repo>.md`.
+Distills the JSONL conversation logs the **pi-agent** CLI keeps under `~/.pi/agent/sessions/<encoded-cwd>/<TIMESTAMP>_<uuid>.jsonl` into one concise markdown file per day, written to `<outdir>/YYYY/Mon/DD/YYYYMMDD_<repo>.md` (e.g. `2026/May/06/20260506_agent-web.md`).
 
-Output uses the **same `Issue → Research → Root cause → User feedback → Fix` template and same line-prefixed extraction format** as `summarize-claude-sessions`, so notes from Claude Code and pi-agent sessions can live in the same brain directory and grep the same way.
+Output uses the **same `Issue → Research → Root cause → User feedback → Fix` template, same line-prefixed extraction format, and same `YYYY/Mon/DD/` folder layout** as `summarize-claude-sessions`, so notes from Claude Code and pi-agent sessions live side-by-side in the brain directory and grep the same way.
+
+The month segment is the 3-letter English abbreviation (`Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec`).
 
 ## When to Use
 
@@ -47,10 +49,10 @@ Don't silently drop the dates that fail — surface the access issue so the user
 
 1. **Resolve sessions dir.** Default `~/.pi/agent/sessions/`. Override with `--sessions-dir`.
 2. **Optionally narrow project.** pi-agent layout is `<sessions-dir>/<encoded-project>/`. Pass `--project --Users-dt-code-agent-web--` to filter.
-3. **Resolve output dir.** Default `/Users/dt/code/vsee/devutils/brain/` (same as Claude Code skill).
-4. **For each date** (or just `--date YYYY-MM-DD`): run the script, read its compact output, write `<outdir>/YYYYMMDD_<repo>.md` using the standard template.
+3. **Resolve output dir.** Read `BRAIN_OUTDIR` from `<skill-dir>/.env` (i.e. `~/.claude/skills/summarize-pi-agent-sessions/.env`). If `.env` is missing or has no `BRAIN_OUTDIR`, fall back to `/Users/dt/code/vsee/devutils/brain/` (same default as the Claude Code skill).
+4. **For each date** (or just `--date YYYY-MM-DD`): run the script, read its compact output, convert the month to its 3-letter abbreviation, `mkdir -p <outdir>/YYYY/Mon/DD`, then write `<outdir>/YYYY/Mon/DD/YYYYMMDD_<repo>.md` using the standard template.
 5. **For many dates**, dispatch parallel general-purpose agents — one per date.
-6. **Coexistence:** if `YYYYMMDD_<repo>.md` already exists for the same repo (e.g. Claude Code wrote one earlier), the agent should *append* a `## (pi-agent) Session …` section rather than overwrite, so both agents' work for the same day is captured in one file. If the repos differ, write a separate file.
+6. **Coexistence:** if `<outdir>/YYYY/Mon/DD/YYYYMMDD_<repo>.md` already exists for the same repo (e.g. Claude Code wrote one earlier), the agent should *append* a `## (pi-agent) Session …` section rather than overwrite, so both agents' work for the same day is captured in one file. If the repos differ, write a separate file in the same dated folder.
 
 ## Extraction Script
 
@@ -106,6 +108,9 @@ node ~/.claude/skills/summarize-pi-agent-sessions/extract.js \
   --project --Users-dt-code-agent-web-- \
   --date 2026-05-01 \
   --out /tmp/pi-sessions-20260501.txt
+mkdir -p /Users/dt/code/vsee/devutils/brain/2026/May/01
+# ...then read /tmp/pi-sessions-20260501.txt and Write to
+# /Users/dt/code/vsee/devutils/brain/2026/May/01/20260501_agent-web.md
 
 # All projects, list session counts per day
 node ~/.claude/skills/summarize-pi-agent-sessions/extract.js \
@@ -118,5 +123,6 @@ node ~/.claude/skills/summarize-pi-agent-sessions/extract.js \
 - **Reading raw JSONL.** Don't — pi-agent files include full `toolResult` payloads (file contents, diff blocks) that dominate size. Always go through `extract.js`.
 - **Trying `mtime` for date.** pi-agent's filename prefix is the authoritative timestamp; mtime drifts when the agent appends. Script already uses the filename.
 - **Including `thinking` blocks.** They're agent internal reasoning, not part of the user-facing trace. Script drops them — don't add them back.
-- **Overwriting Claude Code's same-day file.** If both agents worked on the same repo on the same day, append a `## (pi-agent) Session …` block to the existing file instead of overwriting.
+- **Overwriting Claude Code's same-day file.** If both agents worked on the same repo on the same day, append a `## (pi-agent) Session …` block to the existing `<outdir>/YYYY/Mon/DD/YYYYMMDD_<repo>.md` file instead of overwriting.
+- **Falling back to numeric month folders.** Path is `<outdir>/YYYY/Mon/DD/` (e.g. `May`, not `05`). Don't write to `YYYY/MM/DD/` — that's the old layout.
 - **Forgetting the TCC permission issue.** If reads fail with `Operation not permitted`, surface it; don't pretend the day is empty.

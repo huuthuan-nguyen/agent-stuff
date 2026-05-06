@@ -7,7 +7,9 @@ description: Use when the user asks to summarize Claude Code sessions, build a s
 
 ## Overview
 
-Distills the JSONL conversation logs Claude Code keeps under `~/.claude/projects/<encoded-cwd>/` into one concise markdown file per day, named `YYYYMMDD_<repo>.md`, focused on **issue → research → root cause → user feedback → fix**.
+Distills the JSONL conversation logs Claude Code keeps under `~/.claude/projects/<encoded-cwd>/` into one concise markdown file per day, written to `<outdir>/YYYY/Mon/DD/YYYYMMDD_<repo>.md` (e.g. `2026/May/06/20260506_vc-api-emr.md`), focused on **issue → research → root cause → user feedback → fix**.
+
+The month segment is the 3-letter English abbreviation (`Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec`) — file-system-friendly and easier to skim than `01..12`.
 
 Direct reads of these JSONL files burn enormous tokens (a single session can be 1–2 MB; tool results dominate). This skill ships an extraction script (`extract.js`) that strips tool results, system reminders, and command wrappers, leaving only user prompts, assistant prose, and tool-use call signatures — typically a 95%+ size reduction.
 
@@ -22,12 +24,14 @@ Direct reads of these JSONL files burn enormous tokens (a single session can be 
 ## Workflow
 
 1. **Resolve the project dir.** If cwd is already under `~/.claude/projects/`, use it. Otherwise ask which repo or pass `--project-dir`.
-2. **Resolve the output dir.** Default: `/Users/dt/code/vsee/devutils/brain/` (the user's known brain location). Confirm if unsure.
+2. **Resolve the output dir.** Read `BRAIN_OUTDIR` from `<skill-dir>/.env` (i.e. `~/.claude/skills/summarize-claude-sessions/.env`). If `.env` is missing or has no `BRAIN_OUTDIR`, fall back to `/Users/dt/code/vsee/devutils/brain/` and ask the user to confirm. The user can pass an explicit path to override.
 3. **List dates.** Run the script without `--date` first, or use `stat` / `ls` to enumerate dates that have main session files (ignore `agent-*.jsonl` — sub-agent traces).
 4. **For each date, extract → summarize → write one MD file.**
    - Run `node extract.js --project-dir <dir> --date YYYY-MM-DD --out /tmp/sessions-YYYYMMDD.txt`.
    - Read `/tmp/sessions-YYYYMMDD.txt` (compact, line-prefixed).
-   - Write `<outdir>/YYYYMMDD_<repo>.md` using the template below.
+   - Convert the month number to its 3-letter abbreviation (`05` → `May`).
+   - Create the dated folder if it doesn't exist: `mkdir -p <outdir>/YYYY/Mon/DD`.
+   - Write `<outdir>/YYYY/Mon/DD/YYYYMMDD_<repo>.md` using the template below. The Write tool creates parent dirs only sometimes — run `mkdir -p` first to be safe.
 5. **For large date sets (4+ days), dispatch parallel general-purpose agents** — one per date — each running the script on its own date and writing its own MD file. Token cost stays bounded because each agent only reads the extracted text, not the raw JSONL.
 6. **Skip trivial sessions** ("hey", `/clear`, login errors) with a one-line note. Don't pad.
 
@@ -80,11 +84,14 @@ One `## Session` block per session. Keep total file under ~250 lines per day; lo
 ## Quick Reference
 
 ```bash
-# One date, write to brain dir directly
+# One date, extract then write summary into dated folder
 node ~/.claude/skills/summarize-claude-sessions/extract.js \
   --project-dir ~/.claude/projects/-Users-dt-code-vsee-vc-api-emr \
   --date 2026-05-05 \
   --out /tmp/sessions-20260505.txt
+mkdir -p /Users/dt/code/vsee/devutils/brain/2026/May/05
+# ...then read /tmp/sessions-20260505.txt and Write to
+# /Users/dt/code/vsee/devutils/brain/2026/May/05/20260505_vc-api-emr.md
 
 # All dates, list session counts per day
 node ~/.claude/skills/summarize-claude-sessions/extract.js \
@@ -99,4 +106,5 @@ node ~/.claude/skills/summarize-claude-sessions/extract.js \
 - **Padding trivial sessions.** A "hey" session gets one line, not a full template block.
 - **Inventing a root cause when none was found.** Omit the field if the session wasn't a debug.
 - **Forgetting the repo in the filename.** Filename is `YYYYMMDD_<repo>.md`, where `<repo>` = basename of session `cwd` (the script reports it on the `=S=` line).
+- **Dropping the dated folder structure.** Path is `<outdir>/YYYY/Mon/DD/YYYYMMDD_<repo>.md` (month is the 3-letter abbrev, e.g. `May`) — don't write straight into `<outdir>/`, and don't fall back to `<outdir>/YYYY/MM/DD/`. Always `mkdir -p` the dated folder before Write.
 - **Over-summarizing.** The user wants enough to *trace back* later — preserve specific file paths, commit hashes, PR numbers, and concrete findings. The script already strips the bulk; don't strip more.
