@@ -1,6 +1,9 @@
 #!/usr/bin/env node
-// Fetch an Asana task's details, comments, and attachments.
-// Usage: node fetch-asana-task.js <asana-url-or-gid>
+// Fetch an Asana task's details, comments, and attachments — or post a comment.
+// Usage:
+//   node fetch-asana-task.js <asana-url-or-gid>
+//   node fetch-asana-task.js <asana-url-or-gid> --comment "<text>"
+//   node fetch-asana-task.js <asana-url-or-gid> --comment-file <path>
 // Requires: ASANA_ACCESS_TOKEN — read from process env, or from a .env file in
 // the skill directory or the current working directory (process env wins).
 // PAT: https://app.asana.com/0/my-apps
@@ -50,6 +53,24 @@ function extractTaskGid(input) {
   return null;
 }
 
+async function asanaPost(path, token, body) {
+  const res = await fetch(API + path, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Asana API ${res.status} on POST ${path}\n${text}`);
+  }
+  const json = await res.json();
+  return json.data;
+}
+
 async function asanaGet(path, token, opts = {}) {
   const url = new URL(API + path);
   if (opts.optFields) url.searchParams.set("opt_fields", opts.optFields);
@@ -86,10 +107,28 @@ function fmtSize(bytes) {
   return `${n.toFixed(i ? 1 : 0)} ${units[i]}`;
 }
 
+function parseArgs(argv) {
+  const out = { positional: null, comment: null, commentFile: null };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--comment") {
+      out.comment = argv[++i];
+    } else if (a === "--comment-file") {
+      out.commentFile = argv[++i];
+    } else if (!out.positional) {
+      out.positional = a;
+    }
+  }
+  return out;
+}
+
 async function main() {
-  const arg = process.argv[2];
-  if (!arg) {
-    console.error("Usage: fetch-asana-task.js <asana-url-or-gid>");
+  const args = parseArgs(process.argv.slice(2));
+  if (!args.positional) {
+    console.error("Usage:");
+    console.error("  fetch-asana-task.js <asana-url-or-gid>");
+    console.error("  fetch-asana-task.js <asana-url-or-gid> --comment \"<text>\"");
+    console.error("  fetch-asana-task.js <asana-url-or-gid> --comment-file <path>");
     process.exit(2);
   }
   const token = process.env.ASANA_ACCESS_TOKEN || process.env.ASANA_PAT;
@@ -97,10 +136,28 @@ async function main() {
     console.error("Missing ASANA_ACCESS_TOKEN env var. Create a PAT at https://app.asana.com/0/my-apps");
     process.exit(2);
   }
-  const gid = extractTaskGid(arg);
+  const gid = extractTaskGid(args.positional);
   if (!gid) {
-    console.error(`Could not extract task GID from: ${arg}`);
+    console.error(`Could not extract task GID from: ${args.positional}`);
     process.exit(2);
+  }
+
+  if (args.comment != null || args.commentFile) {
+    let text = args.comment;
+    if (args.commentFile) {
+      text = fs.readFileSync(args.commentFile, "utf8");
+    }
+    if (!text || !text.trim()) {
+      console.error("Refusing to post empty comment.");
+      process.exit(2);
+    }
+    const story = await asanaPost(`/tasks/${gid}/stories`, token, { data: { text } });
+    console.log(`Posted comment to task ${gid}`);
+    console.log(`- story gid: ${story.gid}`);
+    console.log(`- created: ${fmtDate(story.created_at)}`);
+    console.log(`- by: ${story.created_by?.name || "unknown"}`);
+    console.log(`- task: https://app.asana.com/0/0/${gid}`);
+    return;
   }
 
   const taskFields = [

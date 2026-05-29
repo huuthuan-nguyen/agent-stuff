@@ -1,18 +1,24 @@
 ---
 name: investigating-asana-task
-description: Use when the user pastes an Asana task URL (app.asana.com/.../task/<id>) or asks to investigate, summarize, or pull context from an Asana task — fetches task details, comments (stories), and attachments via the Asana REST API so you can investigate.
+description: Use when the user pastes an Asana task URL (app.asana.com/.../task/<id>), asks to investigate/summarize/pull context from an Asana task, or asks to post a comment on an Asana task — fetches task details, comments (stories), and attachments via the Asana REST API, and can also POST a new comment back to the task.
 ---
 
 # Investigating an Asana Task
 
 ## Overview
 
-When the user pastes an Asana task URL, run `fetch-asana-task.js` to pull the task body, full comment thread, and attachment list from the Asana API. Then read the output and investigate — the script gathers facts; you do the analysis.
+`fetch-asana-task.js` has two modes against the Asana REST API:
+
+- **Fetch (default):** pulls task body, full comment thread, and attachment list. Use this to investigate.
+- **Comment (`--comment` / `--comment-file`):** POSTs a new comment to the task's story stream.
+
+The script gathers/sends facts; you do the analysis and draft the comment text.
 
 ## When to Use
 
 - User pastes an `app.asana.com/.../task/<id>` URL
 - User says "investigate this Asana task", "what's in this Asana ticket", "summarize this Asana task"
+- User asks to "comment on", "post a comment to", "reply to", or "update" an Asana task
 - You need context on an Asana task referenced in a conversation, commit, or PR
 
 ## Prerequisites
@@ -42,6 +48,23 @@ When the user pastes an Asana task URL, run `fetch-asana-task.js` to pull the ta
    - **Status drift** — completion state vs. what comments say.
 
 4. Report back to the user with a concise summary and your investigation findings, plus follow-up questions or next steps. Cite comment authors and dates when quoting.
+
+## Posting a Comment
+
+Posting writes to a shared work ticket — **always show the user the draft text first and wait for explicit approval** before running the command. Don't include secrets, internal credentials, or unrelated context.
+
+Two ways to send the text:
+
+```bash
+# Short, single-line:
+node ~/.claude/skills/investigating-asana-task/fetch-asana-task.js "<asana-url-or-gid>" --comment "Your message"
+
+# Multi-line / contains quotes / long: write to a temp file and pass --comment-file
+printf '%s\n' 'Line one' 'Line two' > /tmp/asana-comment.txt
+node ~/.claude/skills/investigating-asana-task/fetch-asana-task.js "<asana-url-or-gid>" --comment-file /tmp/asana-comment.txt
+```
+
+The script POSTs to `/tasks/<gid>/stories` and prints the new story gid + created timestamp on success. Asana renders comment text as plaintext (with auto-linking of URLs) — don't bother with markdown.
 
 ## Output Sections
 
