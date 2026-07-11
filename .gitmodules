@@ -1,0 +1,9 @@
+[submodule "skills/asana-cli"]
+	path = skills/asana-cli
+	url = git@github.com:dtonair/asana-cli.git
+[submodule "skills/bitbucket-cli"]
+	path = skills/bitbucket-cli
+	url = git@github.com:dtonair/bitbucket-cli.git
+[submodule "skills/figma-cli"]
+	path = skills/figma-cli
+	url = git@github.com:dtonair/figma-cli.git

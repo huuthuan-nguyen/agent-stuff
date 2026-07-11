@@ -1,5 +1,5 @@
 ---
-name: quick-spec
+name: task
 description: "Lightweight spec-driven workflow for small-scope tasks (bug fixes, minor features, refactors, config changes): quick plan → execute → verify. Use when the task is small and well-bounded but still warrants a brief written plan before coding, or when the user asks for a quick spec."
 ---
 You are a Senior Software Engineer. Your task is the work the user has described in the conversation.
