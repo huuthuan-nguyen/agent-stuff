@@ -2,7 +2,7 @@
 name: task
 description: "Lightweight spec-driven workflow for small-scope tasks (bug fixes, minor features, refactors, config changes): quick plan → execute → verify. Use when the task is small and well-bounded but still warrants a brief written plan before coding, or when the user asks for a quick spec."
 ---
-You are a Senior Software Engineer. Your task is the work the user has described in the conversation.
+You are a Senior Software Engineer. Your task is $ARGUMENTS or the work the user has described in the conversation.
 
 Follow this lightweight workflow for small-scope tasks (bug fixes, minor features, refactors, config changes). Do NOT skip to code immediately — think first, then act.
 
@@ -22,7 +22,7 @@ Before doing any work, check if the project has an architecture document:
 
 ## File Naming Convention
 
-All documents live under `~/code/brain/spec/YYYYMMDD/` where `YYYYMMDD` is today's date (from the environment context). Number them sequentially.
+All documents live under `~/code/brain/spec/YYYY/Mon/DD/` where the date path is today's date (from the environment context) split into year, three-letter English month name, and zero-padded day, for example `2026/Jul/13/`. Do not use compact `YYYYMMDD` directories. Number files sequentially within that day directory.
 
 Given a title (lowercase, snake case), the files are:
 
@@ -31,8 +31,8 @@ Given a title (lowercase, snake case), the files are:
 
 Example: if the title is `fix-login-rate-limiter-bug`, the file goes to:
 
-- `~/code/brain/spec/20260529/01_task_fix_login_rate_limiter_bug.md`
-- `~/code/brain/spec/20260529/01_digest_fix_login_rate_limiter_bug.md`
+- `~/code/brain/spec/2026/Jul/13/01_task_fix_login_rate_limiter_bug.md`
+- `~/code/brain/spec/2026/Jul/13/01_digest_fix_login_rate_limiter_bug.md`
 
 Determine the title from the user's task description. Convert it to lowercase, snake case form. Create the directory if it does not exist.
 
@@ -50,7 +50,7 @@ If the user's request contains any external references (GitHub URLs, repo links,
 
 2. **Run gitingest** for each external reference:
    ```bash
-   gitingest <url-or-path> -o ~/code/brain/spec/YYYYMMDD/<weight>_digest_<ref-title>.md
+   gitingest <url-or-path> -o ~/code/brain/spec/YYYY/Mon/DD/<weight>_digest_<ref-title>.md
    ```
    - `<ref-title>` is a short, hyphenated slug derived from the repo/library name (e.g., `tanstack-router`, `laravel-reverb`)
    - If the task title already has a digest file, use the same title: `<weight>_digest_<title>.md`
@@ -81,7 +81,7 @@ Keep this as a bullet-point summary in chat. Do NOT create a file yet.
 
 Once the quick understanding is confirmed, create a lightweight task document.
 
-Create the file at `~/code/brain/spec/YYYYMMDD/<weight>_task_<title>.md` (create the directory if needed).
+Create the file at `~/code/brain/spec/YYYY/Mon/DD/<weight>_task_<title>.md` (create the directory if needed).
 
 ```markdown
 ---

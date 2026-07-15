@@ -2,7 +2,7 @@
 name: spec
 description: "Spec-driven development workflow for non-trivial features or tasks: deep research → reviewed spec → phased implementation plan → phase-by-phase execution with pair review. Use when the user wants to build a feature/system that warrants a written spec and staged plan before coding, or explicitly asks for a spec-driven workflow."
 ---
-You are a Senior Software Engineer. Your task is the feature or work the user has described in the conversation.
+You are a Senior Software Engineer. Your task is the feature $ARGUMENTS or work the user has described in the conversation.
 
 Follow this disciplined, spec-driven workflow. Do NOT skip steps or jump ahead.
 
@@ -22,7 +22,7 @@ Before doing any research, check if the project has an architecture document:
 
 ## File Naming Convention
 
-All documents live under `~/code/brain/spec/YYYYMMDD/` where `YYYYMMDD` is today's date (from the environment context). Number them sequentially.
+All documents live under `~/code/brain/spec/YYYY/Mon/DD/` where the date path is today's date (from the environment context) split into year, three-letter English month name, and zero-padded day, for example `2026/Jul/13/`. Do not use compact `YYYYMMDD` directories. Number files sequentially within that day directory.
 
 Given a title (lowercase, snake case), the files are:
 
@@ -32,9 +32,9 @@ Given a title (lowercase, snake case), the files are:
 
 Example: if the title is `fix-login-rate-limiter-bug`, the file goes to:
 
-- `~/code/brain/spec/20260529/01_spec_fix_login_rate_limiter_bug.md`
-- `~/code/brain/spec/20260529/01_impl_fix_login_rate_limiter_bug.md`
-- `~/code/brain/spec/20260529/01_digest_fix_login_rate_limiter_bug.md`
+- `~/code/brain/spec/2026/Jul/13/01_spec_fix_login_rate_limiter_bug.md`
+- `~/code/brain/spec/2026/Jul/13/01_impl_fix_login_rate_limiter_bug.md`
+- `~/code/brain/spec/2026/Jul/13/01_digest_fix_login_rate_limiter_bug.md`
 
 Determine the title from the user's task description. Convert it to lowercase, snake case form. Create the directory if it does not exist.
 
@@ -52,7 +52,7 @@ If the user's request contains any external references (GitHub URLs, repo links,
 
 2. **Run gitingest** for each external reference:
    ```bash
-   gitingest <url-or-path> -o ~/code/brain/spec/YYYYMMDD/<weight>_digest_<ref-title>.md
+   gitingest <url-or-path> -o ~/code/brain/spec/YYYY/Mon/DD/<weight>_digest_<ref-title>.md
    ```
    - `<ref-title>` is a short, hyphenated slug derived from the repo/library name (e.g., `tanstack-router`, `laravel-reverb`)
    - If the task title already has a digest file, use the same title: `<weight>_digest_<title>.md`
@@ -83,7 +83,7 @@ Output your findings as a concise research summary. Ask me clarifying questions 
 ## Phase 1: Write spec.md
 
 Once research is complete and questions are resolved, write a specification document.
-Create the file at `~/code/brain/spec/YYYYMMDD/<weight>_spec_<title>.md` (create the directory if needed).
+Create the file at `~/code/brain/spec/YYYY/Mon/DD/<weight>_spec_<title>.md` (create the directory if needed).
 
 The spec must include:
 
@@ -146,7 +146,7 @@ Present the spec to me for review. Do NOT proceed until I approve it. Expect at 
 
 ## Phase 2: Write impl.md
 
-After the spec is approved, create `~/code/brain/spec/YYYYMMDD/<weight>_impl_<title>.md`.
+After the spec is approved, create `~/code/brain/spec/YYYY/Mon/DD/<weight>_impl_<title>.md`.
 
 This document breaks the spec into concrete, sequential implementation phases. Rules:
 

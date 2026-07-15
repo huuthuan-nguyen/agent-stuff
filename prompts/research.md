@@ -22,7 +22,7 @@ Before doing any research, check if the project has an architecture document:
 
 ## File Naming Convention
 
-All documents live under `~/code/brain/research/YYYYMMDD/` where `YYYYMMDD` is today's date (from the environment context). Number them sequentially.
+All documents live under `~/code/brain/research/YYYY/Mon/DD/` where the date path is today's date (from the environment context) split into year, three-letter English month name, and zero-padded day, for example `2026/Jul/13/`. Do not use compact `YYYYMMDD` directories. Number files sequentially within that day directory.
 
 Given a title (lowercase, snake case), the files are:
 
@@ -31,8 +31,8 @@ Given a title (lowercase, snake case), the files are:
 
 Example: if the title is `evaluate-event-streaming-options`, the files go to:
 
-- `~/code/brain/research/20260606/01_research_evaluate_event_streaming_options.md`
-- `~/code/brain/research/20260606/01_digest_evaluate_event_streaming_options.md`
+- `~/code/brain/research/2026/Jul/13/01_research_evaluate_event_streaming_options.md`
+- `~/code/brain/research/2026/Jul/13/01_digest_evaluate_event_streaming_options.md`
 
 Determine the title from the user's task description. Convert it to lowercase, snake case form. Create the directory if it does not exist. Keep the `<weight>` and `<title>` consistent so a later `spec` can reference this research by the same `<title>`.
 
@@ -50,7 +50,7 @@ If the user's request contains any external references (GitHub URLs, repo links,
 
 2. **Run gitingest** for each external reference:
    ```bash
-   gitingest <url-or-path> -o ~/code/brain/research/YYYYMMDD/<weight>_digest_<ref-title>.md
+   gitingest <url-or-path> -o ~/code/brain/research/YYYY/Mon/DD/<weight>_digest_<ref-title>.md
    ```
    - `<ref-title>` is a short, hyphenated slug derived from the repo/library name (e.g., `tanstack-router`, `laravel-reverb`)
    - If the task title already has a digest file, use the same title: `<weight>_digest_<title>.md`
@@ -91,7 +91,7 @@ Work through the problem space methodically. Pull from whatever sources are warr
 
 ## Phase 3: Write research.md
 
-Once investigation is complete and Phase 1 questions are resolved, write the research document at `~/code/brain/research/YYYYMMDD/<weight>_research_<title>.md`.
+Once investigation is complete and Phase 1 questions are resolved, write the research document at `~/code/brain/research/YYYY/Mon/DD/<weight>_research_<title>.md`.
 
 ```markdown
 ---
