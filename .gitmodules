@@ -7,3 +7,6 @@
 [submodule "skills/figma-cli"]
 	path = skills/figma-cli
 	url = git@github.com:dtonair/figma-cli.git
+[submodule "skills/confluence-cli"]
+	path = skills/confluence-cli
+	url = git@github.com:dtonair/confluence-cli.git
