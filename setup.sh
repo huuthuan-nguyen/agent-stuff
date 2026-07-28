@@ -3,16 +3,20 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PI_AGENT_SKILLS_DIR="${PI_AGENT_SKILLS_DIR:-$HOME/.pi/agent/skills}"
+AGENTS_SKILLS_DIR="${AGENTS_SKILLS_DIR:-$HOME/.agents/skills}"
+AGENTS_PROMPTS_DIR="${AGENTS_PROMPTS_DIR:-$HOME/.agents/prompts}"
 PI_AGENT_PROMPTS_DIR="${PI_AGENT_PROMPTS_DIR:-$HOME/.pi/agent/prompts}"
 CLAUDE_SKILLS_DIR="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-$HOME/.claude/commands}"
+OPENCODE_COMMANDS_DIR="${OPENCODE_COMMANDS_DIR:-$HOME/.config/opencode/commands}"
 
 mkdir -p \
-  "$PI_AGENT_SKILLS_DIR" \
+  "$AGENTS_SKILLS_DIR" \
+  "$AGENTS_PROMPTS_DIR" \
   "$PI_AGENT_PROMPTS_DIR" \
   "$CLAUDE_SKILLS_DIR" \
-  "$CLAUDE_COMMANDS_DIR"
+  "$CLAUDE_COMMANDS_DIR" \
+  "$OPENCODE_COMMANDS_DIR"
 
 initialize_submodules() {
   if [[ -f "$ROOT_DIR/.gitmodules" ]]; then
@@ -36,7 +40,7 @@ install_skill_to() {
 install_skill() {
   local skill_dir="$1"
 
-  install_skill_to "$skill_dir" "$PI_AGENT_SKILLS_DIR"
+  install_skill_to "$skill_dir" "$AGENTS_SKILLS_DIR"
   install_skill_to "$skill_dir" "$CLAUDE_SKILLS_DIR"
 }
 
@@ -75,8 +79,10 @@ install_prompts() {
     [[ -f "$prompt_file" ]] || continue
 
     name="$(basename "$prompt_file")"
+    install_prompt_to "$prompt_file" "$AGENTS_PROMPTS_DIR/$name"
     install_prompt_to "$prompt_file" "$PI_AGENT_PROMPTS_DIR/$name"
     install_prompt_to "$prompt_file" "$CLAUDE_COMMANDS_DIR/$name"
+    install_prompt_to "$prompt_file" "$OPENCODE_COMMANDS_DIR/$name"
   done
 }
 
